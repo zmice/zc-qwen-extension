@@ -1,6 +1,6 @@
 {
   "name": "zc-toolkit",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "packageName": "@zmice/platform-qwen",
   "platform": "qwen",
   "namespace": "zc",
