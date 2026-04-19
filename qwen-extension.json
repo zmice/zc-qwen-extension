@@ -1,0 +1,17 @@
+{
+  "name": "zc-toolkit",
+  "version": "0.2.1",
+  "packageName": "@zmice/platform-qwen",
+  "platform": "qwen",
+  "namespace": "zc",
+  "manifestSource": "/home/runner/work/zc-ai-coding-toolkit/zc-ai-coding-toolkit/packages/toolkit/src/content",
+  "extensionType": "toolkit-bundle",
+  "contextFileName": "QWEN.md",
+  "commandsDir": "commands/zc",
+  "skillsDir": "skills",
+  "agentsDir": "agents",
+  "assetCount": 75,
+  "commandCount": 29,
+  "skillCount": 38,
+  "agentCount": 8
+}
