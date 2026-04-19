@@ -1,5 +1,10 @@
 # zc Qwen Extension
 
+[![source repo](https://img.shields.io/badge/source-zc--ai--coding--toolkit-24292f)](https://github.com/zmice/zc-ai-coding-toolkit)
+[![npm version](https://img.shields.io/npm/v/@zmice/zc)](https://www.npmjs.com/package/@zmice/zc)
+[![license](https://img.shields.io/github/license/zmice/zc-ai-coding-toolkit)](LICENSE)
+[![qwen extension](https://img.shields.io/badge/Qwen%20Code-extension-1677ff)](https://github.com/zmice/zc-qwen-extension)
+
 这是由 [zc AI Coding Toolkit](https://github.com/zmice/zc-ai-coding-toolkit) 自动导出的 Qwen 扩展仓库。
 
 这个仓库可直接作为 Qwen Code 的 Git 扩展安装源，提供：
@@ -10,6 +15,12 @@
 - `skills/`
 - `agents/`
 
+如果你只是想安装：
+
+```bash
+qwen extensions install https://github.com/zmice/zc-qwen-extension.git
+```
+
 ## 安装
 
 ```bash
@@ -19,6 +30,21 @@ qwen extensions install https://github.com/zmice/zc-qwen-extension.git
 ## 更新
 
 ```bash
+qwen extensions update zc-toolkit
+```
+
+## 升级来源
+
+这个仓库不是手工维护，而是由主仓库在发布后自动同步。
+
+- 主仓库：<https://github.com/zmice/zc-ai-coding-toolkit>
+- npm CLI：<https://www.npmjs.com/package/@zmice/zc>
+- 同步方式：GitHub Actions 导出并推送 release bundle
+
+如果你希望拿到最新安装链，优先更新：
+
+```bash
+npm install -g @zmice/zc@latest
 qwen extensions update zc-toolkit
 ```
 
@@ -46,6 +72,17 @@ qwen extensions uninstall zc-toolkit
 - `investigation`
 
 通常从 `zc:start` 开始，由 AI 先评估任务类型，再进入对应 workflow。
+
+## 常用入口
+
+- `zc:start`
+- `zc:product-analysis`
+- `zc:sdd-tdd`
+- `zc:spec`
+- `zc:task-plan`
+- `zc:build`
+- `zc:quality-review`
+- `zc:verify`
 
 ## 命名空间规则
 
@@ -88,6 +125,14 @@ skills 和 agents 也会保留 `zc-` 前缀。
 - 这里的内容应视为发布产物，不建议直接手改
 
 如果你希望调整内容，请回到主仓库修改，再由同步流程重新发布。
+
+## 反馈与问题
+
+如果你遇到问题或想提建议，请不要直接把这个仓库当作源码仓库使用。更合适的入口是：
+
+- Issues：<https://github.com/zmice/zc-ai-coding-toolkit/issues>
+- CLI README：<https://github.com/zmice/zc-ai-coding-toolkit/blob/main/apps/cli/README.md>
+- 使用说明：<https://github.com/zmice/zc-ai-coding-toolkit/blob/main/docs/usage-guide.md>
 
 ## 更多信息
 
