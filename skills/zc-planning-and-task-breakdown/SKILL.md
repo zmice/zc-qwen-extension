@@ -32,6 +32,7 @@ description: "任务拆解"
    - Dependencies
    - Files likely touched
 5. 排出顺序，并设置阶段性检查点
+6. 如果发现会改变计划路线的阻塞问题，先进入 `stop gate`，不要把问题静默写进计划后继续推进
 
 ## 提问纪律
 
@@ -47,8 +48,11 @@ description: "任务拆解"
 - `decision log`：关键取舍和采用原因
 - `evidence`：读取过的规格、代码、配置、测试或上游证据
 - `open risks`：尚未证明的风险和验证方式
-- `fan-out eligibility`：是否能并行、按哪些文件或模块拆、是否需要 `zc team plan`
-- `fan-in gate`：实现后如何合流、审查、验证和清理
+- `stop gates`：会改变架构、数据模型、破坏性边界、并行边界或验收口径的阻塞决策
+- `agent_opportunity`：本计划是否需要只读协助、串行子代理、上下文级并行或 `zc team`
+- `fan-out eligibility`：是否能并行、按哪些文件或模块拆、是否有确认边界、是否需要 `zc team plan`
+- `fan-in gate`：实现后如何合流、审查、回归、验证和清理
+- `implementation tasks`：从计划或评审发现转化来的可执行任务列表
 
 ## 决策日志格式
 
@@ -65,6 +69,79 @@ Recommendation: <chosen action> because <evidence and trade-off>.
 
 理由必须说明被放弃的替代方案，以及当前选择为什么更适合本任务。不能只写“更稳”“更简单”“更符合最佳实践”。
 
+## Stop Gate
+
+以下发现必须先停下来收敛，不允许直接写进计划然后继续：
+
+- 现有证据推翻了原始目标或核心假设
+- 任务顺序、数据模型、权限边界、破坏性操作或并行边界需要重新选择
+- 评审发现如果不处理会导致后续实现返工
+- 缺少验证方式，导致任务无法判断完成
+
+Stop gate 输出格式：
+
+```text
+STOP: <阻塞发现>
+- Evidence:
+- Impact:
+- Options:
+- Recommendation:
+- Required decision:
+```
+
+只有用户已经给出明确偏好，或仓库证据能支持保守路线时，才把 `Required decision` 写成显式假设并继续；否则先问。
+
+## Implementation Tasks
+
+从计划或评审发现生成任务时，统一使用这个可执行格式：
+
+```text
+- [ ] T1 (P1) — <component> — <imperative title>
+  - Source finding:
+  - Files likely touched:
+  - Acceptance criteria:
+  - Verification:
+  - Dependencies:
+```
+
+规则：
+
+- `P1`：阻塞当前交付，必须本轮处理
+- `P2`：应在同一分支处理，否则会留下明显质量缺口
+- `P3`：可延后的跟进项，必须说明为什么不阻塞当前目标
+- 每个任务必须来自具体发现、需求或证据；不能为了填表新增空任务
+- 任务标题用动作开头，能直接交给实现阶段
+
+## Agent Opportunity
+
+计划阶段必须给出明确的多 agent 结论，而不是只写“可并行”：
+
+```text
+agent_opportunity:
+- mode: none | readonly-consult | serial-subagent | context-fanout | zc-team
+- trigger:
+- recommended agents/workers:
+- ownership:
+- confirmation:
+- fan-in gate:
+```
+
+判断规则：
+
+- `readonly-consult`：适合架构、测试、安全、性能、产品或审查侧评；用户已授权只读 agent 默认启用时通知式启动，否则先预告并等待确认，不能改文件。
+- `serial-subagent`：任务独立但存在依赖顺序，主线程逐个委派并 fan-in。
+- `context-fanout`：任务可按文件、模块或证据问题拆开，写入前必须确认文件所有权。
+- `zc-team`：只有用户明确要求或确认，且 `zc team plan` 返回可启动时才进入。
+- `none`：任务简单、强耦合、同文件冲突或缺少验证方式。
+
+fan-in gate 必须说明：
+
+- 主线程如何整合结果。
+- 谁负责修复问题：`producer owns fix`。
+- 谁负责回归确认：`reviewer owns regression`。
+- 哪些命令或人工检查作为最终验证。
+- 是否需要保留、合并或清理分支 / worktree / 临时文件。
+
 ## 成功标准
 
 - 每个任务都能独立实现、测试和验证
@@ -72,7 +149,9 @@ Recommendation: <chosen action> because <evidence and trade-off>.
 - 依赖顺序和可并行项是显式的
 - 人类看完计划后能明确判断“方案对不对”
 - 计划中的问题和风险都能落到后续验证命令或审查项
+- `agent_opportunity` 已给出 mode、触发原因、确认边界和 fan-in gate
 - 并行任务必须有明确文件所有权或隔离理由
+- 阻塞发现已经进入 stop gate 或被转成 P1 implementation task
 
 ## 相关原则
 
