@@ -7,7 +7,7 @@ description: "并行调度"
 
 ## 角色定位
 
-把彼此独立的任务做上下文级 fan-out，并在结束时做 fan-in、冲突检测和集成验证。只读 fan-out 只有在用户已授权本会话或项目默认启用只读 agent 时，才可通知式启动；写入型 fan-out 必须先确认文件所有权、验证命令和 fan-in gate。
+把彼此独立的任务做上下文级 fan-out，并在结束时做 fan-in、冲突检测和集成验证。只读 fan-out 只有在用户已授权本会话或项目默认启用只读 agent 时，才可通知式启动；写入型 fan-out 默认先确认文件所有权、验证命令和 fan-in gate。若用户已接受包含这些边界的计划，低风险写入 fan-out 可通知式启动。
 
 这个 skill 不是默认加速器。能并行不等于应该并行；并行会增加 token、延迟、集成和验证成本。
 
@@ -15,11 +15,12 @@ description: "并行调度"
 
 1. 读取计划，列出所有任务、依赖和预计触达文件。
 2. 判断任务是否彼此独立，是否有清晰文件所有权。
-3. 区分只读通知式 fan-out 和写入确认式 fan-out。
-4. 为每个 worker 分配唯一责任范围、允许读取或修改的边界和验证命令。
-5. fan-out 执行，期间不让多个写入 worker 修改同一文件。
-6. fan-in 汇总，检查 diff、冲突、接口一致性、review finding 和回归结果。
-7. 记录验收 transcript：谁做了什么、谁提出了什么、谁修复了什么、谁回归了什么、证据是什么、还有什么风险。
+3. 先考虑只读 fan-out，用它低风险验证任务独立性、风险点和回归策略。
+4. 区分只读通知式 fan-out、低风险写入预授权 fan-out 和写入显式确认 fan-out。
+5. 为每个 worker 分配唯一责任范围、允许读取或修改的边界和验证命令。
+6. fan-out 执行，期间不让多个写入 worker 修改同一文件。
+7. fan-in 汇总，检查 diff、冲突、接口一致性、review finding 和回归结果。
+8. 记录验收 transcript：谁做了什么、谁拥有哪个任务和文件、谁提出了什么、谁修复了什么、谁回归了什么、证据是什么、还有什么风险。
 
 ## 使用条件
 
@@ -35,13 +36,13 @@ description: "并行调度"
 - 任务依赖同一个未完成设计。
 - 多个任务必须改同一文件。
 - 缺少测试或集成验证方式。
-- 写入型并行没有用户确认。
+- 写入型并行没有显式确认，也没有已接受计划中的预授权边界。
 
 ## 模式选择
 
 | 模式 | 适用场景 | 代价 |
 |---|---|---|
-| Readonly Consult | 多个只读 agent 分别评估架构、测试、安全、性能、产品或 review 风险 | 需要主线程判断哪些结论成立 |
+| Readonly Consult | 多个只读 agent 分别评估架构、测试、安全、性能、产品、上游吸收、Codex 适配、安装/更新或 review 风险 | 需要主线程判断哪些结论成立 |
 | Context Fan-Out | 只需要多个子代理分别分析或修改互不重叠文件 | 共享同一 worktree，fan-in 需谨慎检查 |
 | Worktree Parallel | 任务可能触及相邻区域，或需要独立构建环境 | 需要分支和 worktree 清理 |
 | Cascade | 任务有层级依赖，但每层内可并行 | 每层都要验证后再进下一层 |
@@ -61,7 +62,17 @@ fan-in：主线程汇总结论后再决定是否改代码
 
 如果当前会话或项目没有只读 agent 默认授权，只输出上面的 `Agent assist` 预告并等待确认。
 
-写入型 fan-out 启动前必须给用户看到这段信息的等价内容：
+写入型 fan-out 启动前必须让用户看到这段信息的等价内容。若这些信息已经在本轮已接受计划中出现，可通知式启动，不必重复等待确认：
+
+```text
+Agent assist:
+- worker 数：
+- 文件所有权：
+- fan-in 验证：
+- 启动条件：已接受计划中的低风险写入 fan-out
+```
+
+没有预授权边界时，必须改用显式确认：
 
 ```text
 Recommendation: 开启 <模式> because <并行收益> outweighs <集成代价>。
@@ -72,6 +83,16 @@ Recommendation: 开启 <模式> because <并行收益> outweighs <集成代价>�
 
 确认后我再启动；不确认则按串行推进。
 ```
+
+不能用只读授权替代写入授权。只读 consult 发现“可以并行”也只是证据，真正让 worker 改文件前仍要有显式确认，或有已接受计划中的预授权边界。
+
+低风险写入 fan-out 预授权条件：
+
+- 任务非生产、非敏感、非破坏性。
+- 每个 worker 的修改文件或目录不重叠。
+- worker 不超过 2 个。
+- 计划已列出文件所有权、验证命令和 fan-in gate，并已被用户接受。
+- 启动时用通知式提示复述 worker、文件边界和验证。
 
 默认上限：
 
@@ -123,11 +144,12 @@ Recommendation: 开启 <模式> because <并行收益> outweighs <集成代价>�
 Parallel acceptance transcript:
 - Plan:
 - Workers:
-- Files:
+- Task ownership:
+- Changed files:
 - Findings:
 - Fixes:
 - Regression:
-- Results:
+- Evidence:
 - Verification:
 - Conflicts:
 - Follow-up:
