@@ -48,9 +48,10 @@ description: "并行调度"
 | Context Fan-Out | 只需要多个子代理分别分析或修改互不重叠文件 | 共享同一 worktree，fan-in 需谨慎检查 |
 | Worktree Parallel | 任务可能触及相邻区域，或需要独立构建环境 | 需要分支和 worktree 清理 |
 | Cascade | 任务有层级依赖，但每层内可并行 | 每层都要验证后再进下一层 |
+| Agent Controller | 需要先生成 task brief、report、ledger 和 fan-in gate，但暂不启动真实 worker | 只生成 `.codex/work/agent-runs/<run-id>/` artifacts |
 | Team Orchestration | 需要 tmux + git worktree + 多 CLI worker | 运行时成本最高，需 `zc team` 收尾 |
 
-如果需要文件系统级隔离，切到 `team-orchestration`；不要在本 skill 内展开完整 `zc team` 教程。
+普通 Codex 多 agent 先用 `zc agent plan` 生成 controller artifacts。如果需要文件系统级隔离，切到 `team-orchestration`；不要在本 skill 内展开完整 `zc team` 教程。
 
 ## 通知与授权
 
@@ -93,7 +94,7 @@ Recommendation: 开启 <模式> because <并行收益> outweighs <集成代价>�
 上下文维护适合交给独立 sidecar，而不是让主实现 worker 顺手处理：
 
 - 触发：模块结构、验证命令、安装方式、根入口规则或 `.codex/context/**` 可能过期。
-- 默认模式：`agent:context-steward` scoped_write，先运行 `zc context init --plan --json` 或等价 dry-run；候选变更只涉及自有边界时，直接刷新 `.codex/context/**` 和 `AGENTS.md` 的 `zc-context:init` managed block。
+- 默认模式：`agent:context-steward` scoped_write，先运行 `zc context doctor --json` 和 `zc context update --plan --json` 或等价 dry-run；候选变更只涉及自有边界时，直接刷新 `.codex/context/**` 和 `AGENTS.md` 的 `zc-context:init` managed block。
 - 降级边界：只有出现同文件冲突、来源不明、需要修改用户手写规则或越过项目上下文边界时，才停在 fan-in 等主线程确认。
 - 隔离规则：context steward 不修改业务源码，不占用业务 worker 的文件所有权；如果主任务也要改 `AGENTS.md`，必须先停在 fan-in，由主线程统一处理。
 - loop budget：context steward 默认 1 轮；如果需要补上下文，最多补交 1 次，仍无法判断时回到 `context-engineering`。
@@ -122,6 +123,7 @@ fan-in：主线程读取写入证据；冲突、越界或来源不明时再决�
 - 写入型并行默认最多 2 个 worker。
 - 文件所有权完全不重叠、计划已接受、验证明确时，写入 worker 最多 3 个。
 - 超过默认数量必须说明收益、fan-in 成本、冲突风险和降级路径。
+- `zc agent plan` 是默认 controller artifact 入口。
 - `zc team` 必须用户明确要求或确认。
 
 ## 执行契约
@@ -152,6 +154,7 @@ dispatch_contract:
 - 允许读取的关键上下文
 - 允许修改的文件或模块边界；只读 worker 必须明确“不改文件”
 - 不得触碰其他 worker 文件的说明
+- agent role 和 model；没有特定模型时写明 `platform-default`
 - 任务内验证命令
 - 返回格式：`DONE / BLOCKED / NEEDS_CONTEXT`
 
@@ -162,6 +165,21 @@ dispatch_contract:
 - 提出的 findings 或回归结论
 - 未覆盖风险
 - 需要主线程 fan-in 的事项
+
+文件交接必须走最小资产包：
+
+| 文件 | 负责人 | 用途 |
+|---|---|---|
+| `tasks/<id>.md` | controller | 给 worker 的任务目标、所有权、验证和 loop budget |
+| `reports/<id>.md` | worker | 记录变更、证据、风险和 fan-in 事项 |
+| `review-packages/<id>.md` | controller | 给 reviewer 的 scoped diff、验证证据和未决风险 |
+| `reviews/<id>.md` | reviewer | 记录 finding、复验标准和回归结论 |
+| `ledger.md` / `fan-in.md` | controller | 记录状态、接受/拒绝、最终验证和清理 |
+
+- 不把完整聊天历史粘给 reviewer；reviewer 读 brief、report、changed files 和 scoped diff。
+- 单任务 review 只审该任务，跨任务一致性由最终 fan-in review 处理。
+- reviewer 默认不重跑 implementer 测试，除非证据缺失、过期、可疑或 finding 需要复现。
+- findings 先作为待判定事实记录，不在转给 producer 前预设“有效/无效”。
 
 ## Bounded Loop
 
