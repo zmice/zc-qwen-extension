@@ -67,9 +67,9 @@
 ## 已安装能力
 
 - 清单来源：`/home/runner/work/zc-ai-coding-toolkit/zc-ai-coding-toolkit/packages/toolkit/src/content`
-- 匹配到的资产：75
+- 匹配到的资产：77
 - 命令入口：29 个，统一暴露为 `zc:<command>`
-- skills：38 个
+- skills：40 个
 - agents：8 个
 
 - `skill` `skill:api-and-interface-design`: API 与接口设计
@@ -93,6 +93,7 @@
 - `skill` `skill:idea-refine`: 想法细化
 - `skill` `skill:incremental-implementation`: 增量实现
 - `skill` `skill:multi-perspective-review`: 多视角评审
+- `skill` `skill:observability-and-instrumentation`: 可观测性与埋点
 - `skill` `skill:parallel-agent-dispatch`: 并行调度
 - `skill` `skill:performance-optimization`: 性能优化
 - `skill` `skill:planning-and-task-breakdown`: 任务拆解
@@ -102,6 +103,7 @@
 - `skill` `skill:sdd-tdd-workflow`: SDD+TDD 工作流
 - `skill` `skill:security-and-hardening`: 安全加固
 - `skill` `skill:shipping-and-launch`: 发布上线
+- `skill` `skill:skill-authoring-and-evaluation`: Skill 创作与评测
 - `skill` `skill:source-driven-development`: 官方文档实现
 - `skill` `skill:spec-driven-development`: 规格驱动开发
 - `skill` `skill:sprint-retrospective`: 迭代回顾
