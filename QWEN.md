@@ -67,9 +67,9 @@
 ## 已安装能力
 
 - 清单来源：`/home/runner/work/zc-ai-coding-toolkit/zc-ai-coding-toolkit/packages/toolkit/src/content`
-- 匹配到的资产：77
+- 匹配到的资产：78
 - 命令入口：29 个，统一暴露为 `zc:<command>`
-- skills：40 个
+- skills：41 个
 - agents：8 个
 
 - `skill` `skill:api-and-interface-design`: API 与接口设计
@@ -110,6 +110,7 @@
 - `skill` `skill:subagent-driven-development`: 子代理驱动开发
 - `skill` `skill:team-orchestration`: 团队编排
 - `skill` `skill:test-driven-development`: 测试驱动开发
+- `skill` `skill:ui-ux-review`: 界面与体验审查
 - `skill` `skill:using-agent-skills`: 技能发现
 - `skill` `skill:verification-before-completion`: 完成前验证
 - `command` `command:api`: API
