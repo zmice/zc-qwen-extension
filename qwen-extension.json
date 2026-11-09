@@ -1,6 +1,6 @@
 {
   "name": "zc-toolkit",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "packageName": "@zmice/platform-qwen",
   "platform": "qwen",
   "namespace": "zc",
@@ -10,8 +10,8 @@
   "commandsDir": "commands/zc",
   "skillsDir": "skills",
   "agentsDir": "agents",
-  "assetCount": 78,
+  "assetCount": 79,
   "commandCount": 29,
-  "skillCount": 41,
+  "skillCount": 42,
   "agentCount": 8
 }
